@@ -42,8 +42,6 @@ def fetch_snyk_data(package_name):
         print(f"Error fetching {package_name}: {str(e)}")
         return None
 
-"""NOTE: I expect that these HTML elements are subject to change over time. If
-the script does not generate correct results, you probably want to look here."""
 def parse_snyk_data(html_content, package_name):
     if not html_content:
         return None
@@ -53,12 +51,13 @@ def parse_snyk_data(html_content, package_name):
         
         result = {"package": package_name}
         
+        # score.
         score_elem = soup.select_one('span[data-v-3f4fee08][data-v-77223d2e]')
         if not score_elem:
             score_elem = soup.select_one('div.number span')
         result["score"] = score_elem.text.strip() if score_elem else "N/A"
         
-        scores = {}
+        score = {}
         score_items = soup.select('ul.scores li')
         for li in score_items:
             category_elem = li.select_one('span')
@@ -68,11 +67,12 @@ def parse_snyk_data(html_content, package_name):
             category = category_elem.text.strip().lower()
             value_elem = li.select_one('.vue--pill .vue--pill__body')
             value = value_elem.text.strip() if value_elem else "N/A"
-            scores[category] = value
-        result.update(scores)
+            score[category] = value
         
-        stats = {"stars": "N/A", "forks": "N/A", "contributors": "N/A"}
+        result["score_details"] = score
         
+        # code. 
+        code = {}
         for div in soup.select('.stats-item'):
             label = div.select_one('dt span')
             if not label:
@@ -83,14 +83,51 @@ def parse_snyk_data(html_content, package_name):
             value_text = value.text.strip() if value else "N/A"
             
             if "GitHub Stars" in label_text:
-                stats["stars"] = value_text
+                code["stars"] = value_text
             elif "Forks" in label_text:
-                stats["forks"] = value_text
+                code["forks"] = value_text
             elif "Contributors" in label_text:
-                stats["contributors"] = value_text
+                code["contributors"] = value_text
         
-        result.update(stats)
+        package_div = soup.select_one('div#package.card')
+        if package_div:
+            for div in package_div.select('.stats-item'):
+                label = div.select_one('dt span')
+                if not label:
+                    continue
+                    
+                label_text = label.text.strip()
+                value = div.select_one('dd span')
+                value_text = value.text.strip() if value else "N/A"
+                
+                if "Maintainers" in label_text:
+                    code["maintainers"] = value_text
+                elif "Dependencies" in label_text:
+                    code["dependencies"] = value_text
+        result["code"] = code
         
+        # general.
+        general = {}
+        if package_div:
+            for div in package_div.select('.stats-item'):
+                label = div.select_one('dt span')
+                if not label:
+                    continue
+                    
+                label_text = label.text.strip()
+                value = div.select_one('dd span')
+                value_text = value.text.strip() if value else "N/A"
+                
+                if "Versions" in label_text:
+                    general["versions"] = value_text
+                elif "Latest Release" in label_text:
+                    general["latest_release"] = value_text
+                elif "Age" in label_text:
+                    general["age"] = value_text
+                elif "Python Versions Compatibility" in label_text:
+                    general["compatibility"] = value_text
+        
+        result["general"] = general
         result["score_value"] = extract_score_value(result["score"])
         
         return result
