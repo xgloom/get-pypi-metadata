@@ -101,7 +101,7 @@ def parse_snyk_data(html_content, package_name):
 
 def main():
     if len(sys.argv) < 2:
-        print("Usage: python script.py requirements.txt <snyk_meta.json>")
+        print("Usage: python get-pypi-metadata.py requirements.txt <snyk_meta.json>")
         sys.exit(1)
     
     requirements_file = sys.argv[1]
