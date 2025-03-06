@@ -1,9 +1,17 @@
 # get-pypi-metadata
-Python3 script to query Snyk for PyPi package metadata by looping 
-`package_name`s in `requirements.txt` and requesting
-`https://snyk.io/advisor/python/{package_name}`.
 
-It's super simple, works today (March 6, 2025), maybe not tomorrow. 
+## Usage
+```
+Usage: python3 get-pypi-metadata.py requirements.txt <snyk_meta.json>
+```
 
-I won't maintain it, but it fitted my use case and sharing in case it also 
-fits someone else their use case. 
+## Info
+A simple Python 3 script to fetch PyPI package metadata from Snyk by iterating over `requirements.txt` and querying:  
+
+```
+https://snyk.io/advisor/python/{package_name}
+```
+
+## Notes 
+- It works today (March 6, 2025), might not tomorrow.  
+- This will not be kept up-to-date; I'm just sharing this in case it helps someone else.  
